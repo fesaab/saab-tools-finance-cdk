@@ -1,6 +1,8 @@
 import * as cdk from '@aws-cdk/core';
 import { DynamoDbResources } from './resources/dynamodb';
-import { SmsProcessorResources } from './resources/smsProcessor'
+import { SmsProcessorResources } from './resources/smsProcessor';
+import { ApiLambdaResources } from './resources/apiLambda';
+import { ApiGatewayResources } from './resources/apiGateway';
 import * as path from 'path';
 
 export class CdkStack extends cdk.Stack {
@@ -21,7 +23,14 @@ export class CdkStack extends cdk.Stack {
       lambdaJavaProjectJarPath: path.join(__dirname, '..', '..', 'saab-tools-finance', 'target', 'finance-1.0.jar')
     });
 
-    // TODO API
+    // API
+    const apiLambdas = new ApiLambdaResources(this, 'API Lambdas', {
+      transactionTable: dynamodbTables.transactionsTable,
+      lambdaNodeProjectPath: path.join(__dirname, '..', '..', 'saab-tools-finance-api')
+    });
+    const apiGateway = new ApiGatewayResources(this, 'API Gateway', {
+      listHandler: apiLambdas.listHandler
+    })
 
     // TODO front end
 
