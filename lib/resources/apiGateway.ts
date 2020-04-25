@@ -4,6 +4,7 @@ import * as apigateway from '@aws-cdk/aws-apigateway';
 import * as logs from '@aws-cdk/aws-logs';
 
 export interface ApiGatewayProps {
+    readonly authorizerHandler: lambda.IFunction;
     readonly listHandler: lambda.IFunction;
 }
 
@@ -16,9 +17,11 @@ export class ApiGatewayResources extends cdk.Construct {
         this.node.addDependency(props.listHandler);
 
         // API
+        // log group
         const prdLogGroup = new logs.LogGroup(this, "PrdLogs", {
             logGroupName: '/aws/apigateway/transactions-api'
         });
+        // api
         const api = new apigateway.RestApi(this, "transactions-api", {
             restApiName: "Transactions API",
             description: "This API serves the Transactions.",
@@ -27,12 +30,21 @@ export class ApiGatewayResources extends cdk.Construct {
                 accessLogFormat: apigateway.AccessLogFormat.clf()
             }
         });
+        //resource /transactions
         const transactionsApi = api.root.addResource("transactions");
 
+        // Request based lambda authorizer
+        const requestAuthorizer = new apigateway.RequestAuthorizer(this, 'transactionAuthorizer', {
+            handler: props.authorizerHandler,
+            identitySources: [apigateway.IdentitySource.header('Authorization')]
+        });
+
         // ---------------------------------------------
-        // Bind the List operation to the List lambda
+        // Bind the List operation to the List lambda, protected by the authorizer
         const operationList = new apigateway.LambdaIntegration(props.listHandler);
-        transactionsApi.addMethod("GET", operationList);
+        transactionsApi.addMethod("GET", operationList, {
+            authorizer: requestAuthorizer
+        });
 
     }
 }

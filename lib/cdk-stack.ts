@@ -29,10 +29,9 @@ export class CdkStack extends cdk.Stack {
       lambdaNodeProjectPath: path.join(__dirname, '..', '..', 'saab-tools-finance-api')
     });
     const apiGateway = new ApiGatewayResources(this, 'API Gateway', {
+      authorizerHandler: apiLambdas.authorizerHandler,
       listHandler: apiLambdas.listHandler
     })
-
-    // TODO front end
 
   }
 }

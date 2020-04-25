@@ -15,7 +15,7 @@ export class DynamoDbResources extends cdk.Construct {
         super(scope, id);
 
         // Transactions Table
-        this.transactionsTable = new dynamodb.Table(this, 'Transactions', {
+        const table = new dynamodb.Table(this, 'Transactions', {
             tableName: "Transactions",
             billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
             partitionKey: {
@@ -23,6 +23,7 @@ export class DynamoDbResources extends cdk.Construct {
                 type: dynamodb.AttributeType.STRING
             }
         });
+        this.transactionsTable = table;
 
         // SMS table reference
         this.smsTable = dynamodb.Table.fromTableAttributes(this, 'SmsTable', {
