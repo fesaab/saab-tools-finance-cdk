@@ -9,6 +9,7 @@ import { execSync } from 'child_process';
 export interface SmsProcessorProps {
     readonly smsTable: dynamodb.ITable;
     readonly transactionTable: dynamodb.ITable;
+    readonly categoriesMappingTable: dynamodb.ITable;
     readonly lambdaJavaProjectPomPath: string;
     readonly lambdaJavaProjectJarPath: string;
 }
@@ -49,7 +50,8 @@ export class SmsProcessorResources extends cdk.Construct {
             handler: "com.saab.tools.finance.handler.SMSDynamoDbHandler::handleRequest",
             environment: {
                 "smsTableName": props.smsTable.tableName,
-                "transactionTableName": props.transactionTable.tableName
+                "transactionTableName": props.transactionTable.tableName,
+                "categoriesMappingTableName": props.categoriesMappingTable.tableName
             }
         });
 
@@ -57,6 +59,7 @@ export class SmsProcessorResources extends cdk.Construct {
         props.smsTable.grantStreamRead(this.lambda);
         props.smsTable.grantReadWriteData(this.lambda);
         props.transactionTable.grantReadWriteData(this.lambda);
+        props.categoriesMappingTable.grantReadWriteData(this.lambda);
 
         // Dead Letter Queue to store processing errors
         const dlQueue = new sqs.Queue(this, 'SMSDeadLetterQueue', {

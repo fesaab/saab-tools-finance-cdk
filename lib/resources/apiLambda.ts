@@ -5,15 +5,15 @@ import * as logs from '@aws-cdk/aws-logs';
 
 export interface ApiLambdaProps {
     readonly transactionTable: dynamodb.ITable;
+    readonly categoriesMappingTable: dynamodb.ITable;
     readonly lambdaNodeProjectPath: string;
 }
-
-
 
 export class ApiLambdaResources extends cdk.Construct {
 
     public readonly authorizerHandler: lambda.IFunction;
     public readonly listHandler: lambda.IFunction;
+    public readonly categoryMappingHandler: lambda.IFunction;
 
     constructor(scope: cdk.Construct, id: string, props: ApiLambdaProps) {
         super(scope, id);
@@ -26,7 +26,7 @@ export class ApiLambdaResources extends cdk.Construct {
             name: 'TransactionsApiAuthorizerHandler',
             handler: "api/authorizer.handler",
             environmentVars: {
-                "AUTHORIZATION_HEADER": 'Basic 123456'
+                "AUTHORIZATION_HEADER": 'Custom CMc[3pSa3JvS}68Dztd6[qE'
             },
             projectPath: props.lambdaNodeProjectPath
         });
@@ -44,9 +44,28 @@ export class ApiLambdaResources extends cdk.Construct {
         });
         props.transactionTable.grantReadWriteData(listLambda.lambda);
         this.listHandler = listLambda.lambda;
+
+        // ---------------------------------------------
+        // Creates the lambda to update the transaction category and category mapping
+        const categoryLambda = this.createLambda({
+            name: 'TransactionsApiCategoryPutHandler',
+            handler: "api/category.handler",
+            environmentVars: {
+                "transactionTableName": props.transactionTable.tableName,
+                "categoriesMappingTableName": props.categoriesMappingTable.tableName
+            },
+            projectPath: props.lambdaNodeProjectPath
+        });
+        props.transactionTable.grantReadWriteData(categoryLambda.lambda);
+        props.categoriesMappingTable.grantReadWriteData(categoryLambda.lambda);
+        this.categoryMappingHandler = categoryLambda.lambda;
     }
 
-    
+    /**
+     * Creates a new lambda function with it's own log group.
+     * 
+     * @param props 
+     */    
     private createLambda(props: LambdaFunctionProps): LambdaFunction {
         const lambdaFucntion = new lambda.Function(this, props.name, {
             functionName: props.name,

@@ -19,6 +19,7 @@ export class CdkStack extends cdk.Stack {
     const smsProcessor = new SmsProcessorResources(this, 'SMS Processor', {
       smsTable: dynamodbTables.smsTable,
       transactionTable: dynamodbTables.transactionsTable,
+      categoriesMappingTable: dynamodbTables.categoryTable,
       lambdaJavaProjectPomPath: path.join(__dirname, '..', '..', 'saab-tools-finance', 'pom.xml'),
       lambdaJavaProjectJarPath: path.join(__dirname, '..', '..', 'saab-tools-finance', 'target', 'finance-1.0.jar')
     });
@@ -26,11 +27,13 @@ export class CdkStack extends cdk.Stack {
     // API
     const apiLambdas = new ApiLambdaResources(this, 'API Lambdas', {
       transactionTable: dynamodbTables.transactionsTable,
+      categoriesMappingTable: dynamodbTables.categoryTable,
       lambdaNodeProjectPath: path.join(__dirname, '..', '..', 'saab-tools-finance-api')
     });
     const apiGateway = new ApiGatewayResources(this, 'API Gateway', {
       authorizerHandler: apiLambdas.authorizerHandler,
-      listHandler: apiLambdas.listHandler
+      listHandler: apiLambdas.listHandler,
+      categoryHandler: apiLambdas.categoryMappingHandler
     })
 
   }

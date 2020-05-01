@@ -6,6 +6,7 @@ import * as logs from '@aws-cdk/aws-logs';
 export interface ApiGatewayProps {
     readonly authorizerHandler: lambda.IFunction;
     readonly listHandler: lambda.IFunction;
+    readonly categoryHandler: lambda.IFunction;
 }
 
 export class ApiGatewayResources extends cdk.Construct {
@@ -30,20 +31,35 @@ export class ApiGatewayResources extends cdk.Construct {
                 accessLogFormat: apigateway.AccessLogFormat.clf()
             }
         });
-        //resource /transactions
-        const transactionsApi = api.root.addResource("transactions");
 
         // Request based lambda authorizer
-        const requestAuthorizer = new apigateway.RequestAuthorizer(this, 'transactionAuthorizer', {
-            handler: props.authorizerHandler,
-            identitySources: [apigateway.IdentitySource.header('Authorization')]
-        });
-
-        // ---------------------------------------------
+        // const requestAuthorizer = new apigateway.RequestAuthorizer(this, 'transactionAuthorizer', {
+        //     handler: props.authorizerHandler,
+        //     identitySources: [apigateway.IdentitySource.header('Authorization')]
+        // });
+        
+        // Resource /transactions
+        // -------------------------
+        const transactionsApi = api.root.addResource("transactions");
         // Bind the List operation to the List lambda, protected by the authorizer
         const operationList = new apigateway.LambdaIntegration(props.listHandler);
         transactionsApi.addMethod("GET", operationList, {
-            authorizer: requestAuthorizer
+            authorizer: new apigateway.RequestAuthorizer(this, 'transactionAuthorizerList', {
+                handler: props.authorizerHandler,
+                identitySources: [apigateway.IdentitySource.header('Authorization')]
+            })
+        });
+
+        // Resource /transactions/category
+        // -------------------------
+        const categoriesApi = transactionsApi.addResource("category");
+        // Bind the Category operation to the Category lambda, protected by the authorizer
+        const operationUpdateCategory = new apigateway.LambdaIntegration(props.categoryHandler);
+        categoriesApi.addMethod("PUT", operationUpdateCategory, {
+            authorizer: new apigateway.RequestAuthorizer(this, 'transactionAuthorizerCategoryUpdate', {
+                handler: props.authorizerHandler,
+                identitySources: [apigateway.IdentitySource.header('Authorization')]
+            })
         });
 
     }

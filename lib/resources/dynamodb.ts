@@ -9,13 +9,14 @@ export interface DynamoDbProps {
 export class DynamoDbResources extends cdk.Construct {
 
     public readonly transactionsTable: dynamodb.ITable;
+    public readonly categoryTable: dynamodb.ITable;
     public readonly smsTable: dynamodb.ITable;
 
     constructor(scope: cdk.Construct, id: string, props: DynamoDbProps) {
         super(scope, id);
 
         // Transactions Table
-        const table = new dynamodb.Table(this, 'Transactions', {
+        const transactions = new dynamodb.Table(this, 'Transactions', {
             tableName: "Transactions",
             billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
             partitionKey: {
@@ -23,7 +24,18 @@ export class DynamoDbResources extends cdk.Construct {
                 type: dynamodb.AttributeType.STRING
             }
         });
-        this.transactionsTable = table;
+        this.transactionsTable = transactions;
+
+        // Category Table
+        const categories = new dynamodb.Table(this, 'TransactionsCategoryMapping', {
+            tableName: "TransactionsCategoryMapping",
+            billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+            partitionKey: {
+                name: "description",
+                type: dynamodb.AttributeType.STRING
+            }
+        });
+        this.categoryTable = categories;
 
         // SMS table reference
         this.smsTable = dynamodb.Table.fromTableAttributes(this, 'SmsTable', {
