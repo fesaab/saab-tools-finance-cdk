@@ -18,7 +18,8 @@
     "jest": "^25.3.0",
     "ts-jest": "^25.3.1",
     "ts-node": "^8.1.0",
-    "typescript": "~3.7.2"
+    "typescript": "~3.7.2",
+    "lodash": ">=4.17.19"
   },
   "dependencies": {
     "@aws-cdk/aws-apigateway": "^1.33.0",
