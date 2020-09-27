@@ -11,6 +11,7 @@ export class DynamoDbResources extends cdk.Construct {
     public readonly transactionsTable: dynamodb.ITable;
     public readonly categoryTable: dynamodb.ITable;
     public readonly smsTable: dynamodb.ITable;
+    public readonly monthPeriodTable: dynamodb.ITable;
 
     constructor(scope: cdk.Construct, id: string, props: DynamoDbProps) {
         super(scope, id);
@@ -42,5 +43,16 @@ export class DynamoDbResources extends cdk.Construct {
             tableArn: props.smsTableArn,
             tableStreamArn: props.smsTableStreamArn
         });
+
+        // Month period table
+        const monthPeriod = new dynamodb.Table(this, 'MonthPeriod', {
+            tableName: "MonthPeriod",
+            billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+            partitionKey: {
+                name: "month",
+                type: dynamodb.AttributeType.STRING
+            }
+        });
+        this.monthPeriodTable = monthPeriod;
     }
 }

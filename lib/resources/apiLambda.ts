@@ -6,6 +6,7 @@ import * as logs from '@aws-cdk/aws-logs';
 export interface ApiLambdaProps {
     readonly transactionTable: dynamodb.ITable;
     readonly categoriesMappingTable: dynamodb.ITable;
+    readonly monthPeriodTable: dynamodb.ITable;
     readonly lambdaNodeProjectPath: string;
 }
 
@@ -14,14 +15,14 @@ export class ApiLambdaResources extends cdk.Construct {
     public readonly authorizerHandler: lambda.IFunction;
     public readonly listHandler: lambda.IFunction;
     public readonly categoryMappingHandler: lambda.IFunction;
+    public readonly monthPeriodListHandler: lambda.IFunction;
+    public readonly monthPeriodUpdateHandler: lambda.IFunction;
 
     constructor(scope: cdk.Construct, id: string, props: ApiLambdaProps) {
         super(scope, id);
 
         // ---------------------------------------------
         // Creates the request based lambda authorizer
-        // ---------------------------------------------
-        // Creates the lambda to list all transactions
         const authorizerLambda = this.createLambda({
             name: 'TransactionsApiAuthorizerHandler',
             handler: "api/authorizer.handler",
@@ -59,6 +60,32 @@ export class ApiLambdaResources extends cdk.Construct {
         props.transactionTable.grantReadWriteData(categoryLambda.lambda);
         props.categoriesMappingTable.grantReadWriteData(categoryLambda.lambda);
         this.categoryMappingHandler = categoryLambda.lambda;
+
+        // ---------------------------------------------
+        // Creates the lambda to list month period
+        const monthPeriodListLambda = this.createLambda({
+            name: 'MonthPeriodApiGetHandler',
+            handler: "api/monthPeriodList.handler",
+            environmentVars: {
+                "monthPeriodTableName": props.monthPeriodTable.tableName
+            },
+            projectPath: props.lambdaNodeProjectPath
+        });
+        props.monthPeriodTable.grantReadData(monthPeriodListLambda.lambda);
+        this.monthPeriodListHandler = monthPeriodListLambda.lambda;
+
+        // ---------------------------------------------
+        // Creates the lambda to update month period
+        const monthPeriodUpdateLambda = this.createLambda({
+            name: 'MonthPeriodApiUpdateHandler',
+            handler: "api/monthPeriodUpdate.handler",
+            environmentVars: {
+                "monthPeriodTableName": props.monthPeriodTable.tableName
+            },
+            projectPath: props.lambdaNodeProjectPath
+        });
+        props.monthPeriodTable.grantReadWriteData(monthPeriodUpdateLambda.lambda);
+        this.monthPeriodUpdateHandler = monthPeriodUpdateLambda.lambda;
     }
 
     /**

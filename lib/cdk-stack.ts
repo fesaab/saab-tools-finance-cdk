@@ -28,12 +28,15 @@ export class CdkStack extends cdk.Stack {
     const apiLambdas = new ApiLambdaResources(this, 'API Lambdas', {
       transactionTable: dynamodbTables.transactionsTable,
       categoriesMappingTable: dynamodbTables.categoryTable,
+      monthPeriodTable: dynamodbTables.monthPeriodTable,
       lambdaNodeProjectPath: path.join(__dirname, '..', '..', 'saab-tools-finance-api')
     });
     const apiGateway = new ApiGatewayResources(this, 'API Gateway', {
       authorizerHandler: apiLambdas.authorizerHandler,
       listHandler: apiLambdas.listHandler,
-      categoryHandler: apiLambdas.categoryMappingHandler
+      categoryHandler: apiLambdas.categoryMappingHandler,
+      monthPeriodListHandler: apiLambdas.monthPeriodListHandler,
+      monthPeriodUpdateHandler: apiLambdas.monthPeriodUpdateHandler
     })
 
   }
