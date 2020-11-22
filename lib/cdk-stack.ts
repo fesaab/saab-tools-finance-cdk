@@ -11,8 +11,8 @@ export class CdkStack extends cdk.Stack {
 
     // DynamoDB
     const dynamodbTables = new DynamoDbResources(this, 'DynamoDB Tables', {
-      smsTableArn: "arn:aws:dynamodb:us-east-1:689243596060:table/Sms-t6sbvak6bfcfrmog5tw7j6o5cq-dev",
-      smsTableStreamArn: "arn:aws:dynamodb:us-east-1:689243596060:table/Sms-t6sbvak6bfcfrmog5tw7j6o5cq-dev/stream/2020-03-29T09:36:04.035"
+      smsTableArn: "arn:aws:dynamodb:us-east-1:689243596060:table/Sms-ta6uu4hiczh3lfovbmafoet3mq-prod",
+      smsTableStreamArn: "arn:aws:dynamodb:us-east-1:689243596060:table/Sms-ta6uu4hiczh3lfovbmafoet3mq-prod/stream/2020-11-22T14:28:44.045"
     });
 
     // Lambda
